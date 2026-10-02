@@ -1,0 +1,10 @@
+{
+  "_init": {
+    "features": [
+      "database",
+      "auth"
+    ]
+  },
+  "orgId": "org-solitary-queen-31395747",
+  "projectId": "wandering-art-66139794"
+}
