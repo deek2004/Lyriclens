@@ -31,7 +31,7 @@ interface AnalysisResult {
   craftSummary: string;
 }
 
-// ─── Groq client (instantiated once per worker) ───────────────────────────────
+// ─── Groq client ──────────────────────────────────────────────────────────────
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -39,7 +39,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const SYSTEM_PROMPT = `You are LyricLens, an expert music analyst and linguist. Your sole job is to decode lyric lines so any listener — regardless of background — can deeply understand what an artist is saying AND how they are saying it.
 
-You will receive a lyric line, the artist name, and optionally a song title. Return ONLY a valid JSON object with this exact structure (no markdown fences, no preamble, no trailing text):
+You will receive a lyric line and optionally a song title. Return ONLY a valid JSON object with this exact structure (no markdown fences, no preamble, no trailing text):
 
 {
   "literalMeaning": "Plain-English explanation of exactly what the line says, written for a curious 15-year-old with no music background.",
@@ -80,11 +80,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { lyric, songTitle, artist, userId } = body as {
+    const { lyric, songTitle } = body as {
       lyric?: string;
       songTitle?: string;
-      artist?: string;
-      userId?: string;
     };
 
     if (!lyric || lyric.trim() === "") {
@@ -105,7 +103,6 @@ export async function POST(request: NextRequest) {
     // ── 2. Build user prompt ────────────────────────────────────────────────
     const userMessage = [
       `Lyric: "${lyric.trim()}"`,
-      `Artist: ${artist?.trim() || "Unknown"}`,
       `Song: ${songTitle?.trim() || "Unknown"}`,
     ].join("\n");
 
@@ -136,10 +133,10 @@ export async function POST(request: NextRequest) {
     // ── 4. Persist to Interpretation table ─────────────────────────────────
     await prisma.interpretation.create({
       data: {
-        userId: userId ?? null,
+        userId: null,      // Bypassing auth completely
+        artist: null,      // Removed from UI
         lyric: lyric.trim(),
         songTitle: songTitle?.trim() ?? null,
-        artist: artist?.trim() ?? null,
         analysis: analysis as unknown as Prisma.InputJsonValue,
       },
     });
@@ -153,7 +150,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "interpretation_failed",
-        // expose detail in dev so we can diagnose without checking server logs
         ...(process.env.NODE_ENV !== "production" && { detail: msg }),
       },
       { status: 500 }
