@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import { Syne, Inter } from "next/font/google";
 import "./globals.css";
 
+// Removing the 'weight' arrays prevents the Vercel build crash. 
+// Variable fonts load all weights automatically!
 const syne = Syne({
   subsets: ["latin"],
   variable: "--font-syne",
-  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  weight: ["300", "400", "500", "600"],
   display: "swap",
 });
 
