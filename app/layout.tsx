@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, Inter } from "next/font/google";
 import "./globals.css";
-import Providers from "./components/Providers";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -37,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${inter.variable}`}>
       <body className="font-inter antialiased">
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );
